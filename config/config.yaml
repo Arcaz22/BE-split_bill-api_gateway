@@ -1,0 +1,4 @@
+server:
+  port: "8080"
+services:
+  auth: "http://localhost:3000/v1"
