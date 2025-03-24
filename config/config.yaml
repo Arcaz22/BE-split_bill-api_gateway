@@ -1,4 +1,15 @@
 server:
   port: "8080"
+
 services:
-  auth: "http://localhost:3000/v1"
+  auth:
+    url: "http://localhost:3000/v1"
+    timeout: 5s
+  transaction:
+    url: "http://localhost:8081/v1"
+    timeout: 5s
+
+jwt:
+  secret: "secretOfKey"
+  access_token_duration: 15m
+  refresh_token_duration: 168h

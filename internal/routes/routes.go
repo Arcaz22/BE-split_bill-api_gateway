@@ -1,77 +1,73 @@
 package routes
 
 import (
-	"bytes"
-	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
+	"api-gateway/internal/handler"
+	"api-gateway/internal/middleware"
 	"api-gateway/pkg/response"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-func forwardAuthService(c *gin.Context) {
-	authServiceURL := "http://localhost:3000/v1"
+func SetupRouter() *gin.Engine {
+	router := gin.Default()
 
-	targetURL := authServiceURL + c.Request.URL.Path
+	router.Use(middleware.Logger())
+	router.Use(middleware.CORS())
+	router.Use(middleware.RateLimit())
+	router.Use(middleware.CircuitBreaker())
 
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		response.Error(c, http.StatusInternalServerError, "Error reading request body")
-	}
+	router.GET("/health", func(c *gin.Context) {
+		response.JSON(c, http.StatusOK, gin.H{
+			"status":    "OK",
+			"timestamp": time.Now().Unix(),
+			"message":   "API Gateway is running",
+		})
+	})
 
-	req, err := http.NewRequest(c.Request.Method, targetURL, bytes.NewBuffer(body))
-	if err != nil {
-		response.Error(c, http.StatusInternalServerError, "Error creating request")
-        return
-	}
-
-	req.Header = c.Request.Header
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		response.Error(c, http.StatusServiceUnavailable, "Error forwarding request")
-        return
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-        response.Error(c, http.StatusInternalServerError, "Error reading response")
-        return
-	}
-
-	for k, v := range resp.Header {
-		c.Writer.Header()[k] = v
-	}
-
-	c.Data(resp.StatusCode, resp.Header.Get("Content-Type"), respBody)
-}
-
-func SetupRoutes(r *gin.Engine) {
-	auth := r.Group("/auth")
+	// Auth routes - public
+	auth := router.Group("/auth")
 	{
-		auth.POST("/signup", forwardAuthService)
-		auth.POST("/signin", forwardAuthService)
-		auth.POST("/refresh-token", forwardAuthService)
-		auth.POST("/logout", forwardAuthService)
-		auth.POST("/google", forwardAuthService)
-		auth.GET("/google/callback", forwardAuthService)
+		authHandler := handler.AuthHandler()
+		auth.POST("/signup", authHandler)
+		auth.POST("/signin", authHandler)
+		auth.POST("/refresh-token", authHandler)
+		auth.POST("/logout", authHandler)
+		auth.GET("/verify", authHandler)
+		auth.POST("/google", authHandler)
+		auth.GET("/google/callback", authHandler)
 	}
 
-	user := r.Group("/user")
+	user := router.Group("/user")
+	user.Use(middleware.Auth())
 	{
-		user.GET("/current-user", forwardAuthService)
-		user.GET("/get-all-user", forwardAuthService)
-		user.POST("/add-profile", forwardAuthService)
-		user.POST("/add-avatar-profile", forwardAuthService)
-		user.PUT("/update-profile", forwardAuthService)
-		user.PUT("/update-avatar-profile", forwardAuthService)
+		authHandler := handler.AuthHandler()
+		user.GET("/current-user", authHandler)
+		user.GET("/get-all-user", authHandler)
+		user.POST("/add-profile", authHandler)
+		user.POST("/add-avatar-profile", authHandler)
+		user.PUT("/update-profile", authHandler)
+		user.PUT("/update-avatar-profile", authHandler)
 	}
 
-	role := r.Group("/role")
+	role := router.Group("/role")
+	role.Use(middleware.Auth())
 	{
-		role.GET("/get-all-role", forwardAuthService)
-		role.POST("/create-role", forwardAuthService)
-		role.POST("/add-user-role", forwardAuthService)
+		authHandler := handler.AuthHandler()
+		role.GET("/get-all-role", authHandler)
+		role.POST("/create-role", authHandler)
+		role.POST("/add-user-role", authHandler)
 	}
+
+	// Transaction routes
+	transaction := router.Group("/transaction")
+	transaction.Use(middleware.Auth())
+	{
+		transactionHandler := handler.TransactionHandler()
+		transaction.GET("/", transactionHandler)
+		transaction.GET("/current-user", transactionHandler)
+	}
+
+	return router
 }
