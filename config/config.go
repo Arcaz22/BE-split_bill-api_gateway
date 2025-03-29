@@ -23,6 +23,10 @@ type Config struct {
 			URL     string        `mapstructure:"url"`
 			Timeout time.Duration `mapstructure:"timeout"`
 		} `mapstructure:"transaction"`
+		Notification struct {
+			URL     string        `mapstructure:"url"`
+			Timeout time.Duration `mapstructure:"timeout"`
+		} `mapstructure:"notification"`
 	} `mapstructure:"services"`
 
 	JWT struct {

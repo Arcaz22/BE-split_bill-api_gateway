@@ -1,15 +1,16 @@
 package middleware
 
 import (
-    "api-gateway/pkg/constant"
-    "api-gateway/pkg/response"
-    "fmt"
-    "net/http"
-    "strings"
-    "time"
+	"api-gateway/pkg/constant"
+	"api-gateway/pkg/response"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
-    "github.com/gin-gonic/gin"
-    "github.com/golang-jwt/jwt/v4"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 var jwtSecret = []byte("secretOfKey")
@@ -107,8 +108,23 @@ func Auth() gin.HandlerFunc {
         c.Set("role", role)
 
         c.Request.Header.Set("X-User-ID", userID)
-        fmt.Println("X-User-ID Header Set:", userID)
+        // Add debug logging
+        fmt.Println("\n=== Detailed Request Information ===")
+        fmt.Printf("Endpoint: %s %s\n", c.Request.Method, c.Request.URL.Path)
+        fmt.Printf("User ID: %s\n", userID)
+        fmt.Printf("Role: %s\n", role)  // Check if role is empty
+        fmt.Printf("Request Body Length: %d\n", c.Request.ContentLength)
 
+        // Log request body if present
+        if c.Request.Body != nil {
+            var body map[string]interface{}
+            if err := c.ShouldBindJSON(&body); err == nil {
+                fmt.Printf("Request Body: %+v\n", body)
+                // Important: Reset the body for downstream handlers
+                c.Request.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("%v", body)))
+            }
+        }
+        fmt.Println("===========================\n")
         c.Next()
     }
 }

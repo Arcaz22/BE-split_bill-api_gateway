@@ -61,13 +61,39 @@ func SetupRouter() *gin.Engine {
 	}
 
 	// Transaction routes
-	transaction := router.Group("/transaction")
+	test := router.Group("/transaction")
+	test.Use(middleware.Auth())
+	{
+		transactionHandler := handler.TransactionHandler()
+		test.GET("/", transactionHandler)
+		test.GET("/current-user", transactionHandler)
+	}
+
+	// Friendship routes
+	transaction := router.Group("/friendships")
 	transaction.Use(middleware.Auth())
 	{
 		transactionHandler := handler.TransactionHandler()
+		transaction.POST("/", transactionHandler)
+		transaction.PUT("/:id", transactionHandler)
+		transaction.GET("/:id", transactionHandler)
 		transaction.GET("/", transactionHandler)
-		transaction.GET("/current-user", transactionHandler)
+		transaction.DELETE("/:id", transactionHandler)
+		transaction.GET("/pending", transactionHandler)
+		transaction.GET("/friends", transactionHandler)
+		transaction.PUT("/:id/accept", transactionHandler)
+		transaction.PUT("/:id/reject", transactionHandler)
 	}
+
+	// Notification routes
+	notifications := router.Group("/notifications")
+    notifications.Use(middleware.Auth())
+    {
+        notificationHandler := handler.NotificationHandler()
+        notifications.GET("/", notificationHandler)
+        notifications.GET("/:notification_id", notificationHandler)
+        notifications.PUT("/:notification_id/read", notificationHandler)
+    }
 
 	return router
 }

@@ -30,6 +30,7 @@ const (
 const (
 	ServiceAuth         = "auth-service"
 	ServiceTransaction  = "transaction-service"
+	ServiceNotification = "notification-service"
 )
 
 // Circuit Breaker settings

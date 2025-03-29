@@ -21,6 +21,7 @@ func InitCircuitBreaker() {
 	services := []string{
 		constant.ServiceAuth,
 		constant.ServiceTransaction,
+		constant.ServiceNotification,
 	}
 
 	for _, service := range services {
@@ -103,12 +104,13 @@ func determineService(path string) string {
 		}
 	}
 
-	// Map segment to service
 	switch segment {
 	case "auth":
 		return constant.ServiceAuth
 	case "transaction":
 		return constant.ServiceTransaction
+	case "notifications":
+        return constant.ServiceNotification
 	default:
 		return constant.ServiceAuth
 	}
