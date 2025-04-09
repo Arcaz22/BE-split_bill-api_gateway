@@ -22,6 +22,9 @@ var publicPaths = []string{
     "/auth/google/callback",
     "/auth/verify",
     "/health",
+    "/auth/health",
+    "/notifications/health",
+    "/transaction/health",
 }
 
 func isPublicPath(path string) bool {

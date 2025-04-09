@@ -9,7 +9,7 @@ services:
     url: "http://localhost:8081/v1"
     timeout: 5s
   notification:
-    url: "http://localhost:8080/v1"
+    url: "http://localhost:8000/v1"
     timeout: 5s
 
 jwt:

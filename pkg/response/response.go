@@ -7,15 +7,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// HealthResponse represents the health check response
+// @Description Health check response format
+type HealthResponse struct {
+    Status    string `json:"status" example:"OK"`
+    Timestamp int64  `json:"timestamp" example:"1648243759"`
+    Message   string `json:"message" example:"API Gateway is running"`
+}
+
+// ErrorResponse represents the error response structure
+// @Description Error response format
 type ErrorResponse struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+    Code    string      `json:"code" example:"BAD_REQUEST" description:"Error code"`
+    Message string      `json:"message" example:"Invalid input parameters" description:"Error message"`
+    Details interface{} `json:"details,omitempty" description:"Additional error details"`
 }
 
 type SuccessResponse struct {
-	Data interface{} `json:"data"`
-	Meta interface{} `json:"meta,omitempty"`
+    Data interface{} `json:"data" description:"Response data"`
+    Meta interface{} `json:"meta,omitempty" description:"Metadata information"`
 }
 
 func JSON(c *gin.Context, status int, data interface{}) {

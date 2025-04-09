@@ -63,3 +63,12 @@ const (
 	ErrCodeServiceUnavailable = "SERVICE_UNAVAILABLE"
 	ErrCodeRateLimitExceeded  = "RATE_LIMIT_EXCEEDED"
 )
+
+const (
+    APIPrefix = "/api/v1"
+
+    // Auth Service Endpoints
+    AuthHealthPath  = APIPrefix + "/health"
+    AuthSignUpPath  = APIPrefix + "/signup"
+    AuthSignInPath  = APIPrefix + "/signin"
+)

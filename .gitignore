@@ -1,0 +1,12 @@
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+.env
